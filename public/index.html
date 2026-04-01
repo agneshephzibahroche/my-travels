@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel Statement Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="topbar">
+        <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">
+          Menu
+        </button>
+        <div id="menu-panel" class="menu-panel is-hidden">
+          <button id="theme-toggle" class="menu-link" type="button">Toggle dark mode</button>
+          <a id="journey-details-link" class="menu-link is-disabled" href="/details.html" aria-disabled="true">Journey details page</a>
+          <div class="menu-built-by">
+            <p class="menu-built-title">Built by: Agnes Hephzibah Roche</p>
+            <div class="contact-actions">
+              <a class="contact-chip email-chip" href="mailto:agneshephzibahroche@gmail.com" aria-label="Email Agnes Hephzibah Roche">
+                <span class="contact-icon">Mail</span>
+              </a>
+              <a class="contact-chip github-chip" href="https://github.com/agneshephzibahroche" target="_blank" rel="noreferrer" aria-label="Open Agnes Hephzibah Roche GitHub">
+                <span class="contact-icon">GitHub</span>
+              </a>
+              <a class="contact-chip linkedin-chip" href="https://www.linkedin.com/in/agnes-roche" target="_blank" rel="noreferrer" aria-label="Open Agnes Roche LinkedIn">
+                <span class="contact-icon">LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <header class="hero">
+        <div>
+          <p class="eyebrow">SimplyGo Transit Insights</p>
+          <h1>Drop a transit statement to generate insights</h1>
+          <p class="hero-copy">
+            Start by providing a statement file. The page will only generate the
+            dashboard and conclusions after you upload one.
+          </p>
+        </div>
+
+        <section class="path-form drop-panel">
+          <label for="statement-file">Drop statement here</label>
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload statement">
+            <input id="statement-file" name="statementFile" type="file" accept=".pdf,.txt" hidden />
+            <p class="drop-title">Drag, drop, and watch your travel story light up</p>
+            <p class="helper-text">You can also click here to choose a `.pdf` or `.txt` statement file.</p>
+          </div>
+          <div class="drop-actions">
+            <button id="load-sample" type="button">Load sample statement</button>
+          </div>
+        </section>
+      </header>
+
+      <section class="panel how-to-panel">
+        <h2 class="section-title">How to get your SimplyGo statement</h2>
+        <ol class="steps-list">
+          <li>Sign in to your SimplyGo account on the SimplyGo website or app.</li>
+          <li>Open your card or account transaction history.</li>
+          <li>Look for the monthly transit statement or statement download option.</li>
+          <li>Download the statement as a `PDF` if available.</li>
+          <li>Come back here and upload that statement file.</li>
+        </ol>
+        <p class="helper-text">
+          If SimplyGo only gives you text-based exports, you can upload a `.txt` statement too.
+        </p>
+      </section>
+
+      <main id="dashboard" class="dashboard is-hidden" aria-live="polite">
+        <section class="empty-panel">
+          <h2 class="section-title">Waiting for statement</h2>
+          <p class="section-subtitle">
+            Upload a SimplyGo statement on this page to generate the dashboard.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <template id="card-template">
+      <article class="metric-card">
+        <p class="metric-label"></p>
+        <p class="metric-value"></p>
+        <p class="metric-note"></p>
+      </article>
+    </template>
+
+    <script src="/menu.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

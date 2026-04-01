@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Journey Details</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="topbar">
+        <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">
+          Menu
+        </button>
+        <div id="menu-panel" class="menu-panel is-hidden">
+          <button id="theme-toggle" class="menu-link" type="button">Toggle dark mode</button>
+          <a id="journey-details-link" class="menu-link" href="/details.html">Journey details page</a>
+          <a class="menu-link" href="/">Back to insights</a>
+          <div class="menu-built-by">
+            <p class="menu-built-title">Built by: Agnes Hephzibah Roche</p>
+            <div class="contact-actions">
+              <a class="contact-chip email-chip" href="mailto:agneshephzibahroche@gmail.com" aria-label="Email Agnes Hephzibah Roche">
+                <span class="contact-icon">Mail</span>
+              </a>
+              <a class="contact-chip github-chip" href="https://github.com/agneshephzibahroche" target="_blank" rel="noreferrer" aria-label="Open Agnes Hephzibah Roche GitHub">
+                <span class="contact-icon">GitHub</span>
+              </a>
+              <a class="contact-chip linkedin-chip" href="https://www.linkedin.com/in/agnes-roche" target="_blank" rel="noreferrer" aria-label="Open Agnes Roche LinkedIn">
+                <span class="contact-icon">LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <header class="hero hero-compact">
+        <div>
+          <p class="eyebrow">Journey Details</p>
+          <h1>Every trip, leg, and fare in one place</h1>
+          <p class="hero-copy">
+            This page keeps the full trip detail separate so the main insights page stays easy to scan.
+          </p>
+        </div>
+      </header>
+
+      <main id="details-view" class="dashboard" aria-live="polite">
+        <section class="empty-panel">
+          <h2 class="section-title">No statement loaded yet</h2>
+          <p class="section-subtitle">
+            Upload a statement on the main page first, then return here for the detailed journey view.
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <script src="/menu.js"></script>
+    <script src="/details.js"></script>
+  </body>
+</html>

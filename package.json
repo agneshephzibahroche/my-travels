@@ -1,0 +1,10 @@
+{
+  "name": "my-travels-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local web app for ingesting a SimplyGo transit statement and exploring travel insights.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "vercel dev"
+  }
+}

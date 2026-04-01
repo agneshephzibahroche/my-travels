@@ -34,7 +34,22 @@ function renderTableRows(journeys) {
 
 function renderDetails(data) {
   detailsView.innerHTML = `
-    <section class="panel">
+    <section class="panel details-summary-panel">
+      <div class="details-summary-grid">
+        <article class="details-stat details-stat-coral">
+          <p class="mini-label">Statement period</p>
+          <p class="mini-value">${data.metadata.period || "N/A"}</p>
+          <p class="mini-note">Monthly SimplyGo statement</p>
+        </article>
+        <article class="details-stat details-stat-blue">
+          <p class="mini-label">Total spend</p>
+          <p class="mini-value">${formatCurrency(data.metadata.totalCharged || 0)}</p>
+          <p class="mini-note">${(data.journeys || []).length} journeys captured</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel details-table-panel">
       <h2 class="section-title">Journey details</h2>
       <p class="section-subtitle">
         Full journey rows from the uploaded statement.

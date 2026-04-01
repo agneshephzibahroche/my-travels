@@ -66,6 +66,23 @@ body {
   margin-bottom: 18px;
 }
 
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgba(11, 16, 31, 0.28);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.menu-overlay.is-hidden {
+  display: none;
+}
+
+.menu-overlay.is-open {
+  opacity: 1;
+}
+
 .menu-button {
   min-width: 92px;
 }
@@ -83,10 +100,18 @@ body {
     var(--panel-strong);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
+  transform: translateY(-8px);
+  opacity: 0;
+  transition: transform 220ms ease, opacity 220ms ease;
 }
 
 .menu-panel.is-hidden {
   display: none;
+}
+
+.menu-panel.is-open {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .menu-link {
@@ -134,20 +159,22 @@ button.menu-link {
 
 .contact-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
+  align-items: center;
 }
 
 .contact-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 92px;
+  min-width: 0;
+  flex: 1 1 0;
   padding: 10px 12px;
   border-radius: 999px;
   text-decoration: none;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(27, 37, 64, 0.08);
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
 }
@@ -163,24 +190,11 @@ button.menu-link {
   justify-content: center;
   min-width: 0;
   padding: 0;
-  border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #fff;
-}
-
-.email-chip .contact-icon {
-  background: linear-gradient(135deg, #ff7a59, #ffb347);
-}
-
-.github-chip .contact-icon {
-  background: linear-gradient(135deg, #4b587c, #1f2437);
-}
-
-.linkedin-chip .contact-icon {
-  background: linear-gradient(135deg, #2a8bf2, #6eb7ff);
+  color: currentColor;
 }
 
 :root[data-theme="dark"] body {
@@ -440,7 +454,8 @@ button:hover {
 .metrics-grid,
 .charts-grid,
 .lower-grid,
-.mini-grid {
+.mini-grid,
+.section-links-grid {
   display: grid;
   gap: 20px;
 }
@@ -475,6 +490,57 @@ button:hover {
 .mini-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 18px;
+}
+
+.section-links-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.section-link-card {
+  display: block;
+  padding: 20px;
+  border-radius: 22px;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.section-link-card h3,
+.section-link-card p {
+  margin: 0;
+}
+
+.section-link-card h3 {
+  margin-top: 8px;
+  font-size: 1.2rem;
+}
+
+.section-link-card p {
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.5;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.section-link-kicker {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+
+.trends-card {
+  background: linear-gradient(135deg, rgba(76, 181, 255, 0.18), rgba(111, 194, 255, 0.08));
+}
+
+.patterns-card {
+  background: linear-gradient(135deg, rgba(255, 122, 89, 0.18), rgba(245, 183, 0, 0.08));
+}
+
+.details-card {
+  background: linear-gradient(135deg, rgba(47, 199, 161, 0.16), rgba(76, 181, 255, 0.08));
 }
 
 .details-summary-grid {
@@ -525,6 +591,22 @@ button:hover {
   background: #222b47;
   border-color: rgba(209, 220, 255, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+:root[data-theme="dark"] .section-link-card {
+  border-color: rgba(209, 220, 255, 0.08);
+}
+
+:root[data-theme="dark"] .trends-card {
+  background: linear-gradient(135deg, rgba(85, 183, 255, 0.16), rgba(111, 194, 255, 0.06));
+}
+
+:root[data-theme="dark"] .patterns-card {
+  background: linear-gradient(135deg, rgba(255, 143, 112, 0.16), rgba(245, 196, 81, 0.06));
+}
+
+:root[data-theme="dark"] .details-card {
+  background: linear-gradient(135deg, rgba(68, 215, 182, 0.14), rgba(85, 183, 255, 0.06));
 }
 
 :root[data-theme="dark"] .details-badge {
@@ -898,6 +980,7 @@ tbody tr:hover {
   .lower-grid,
   .metrics-grid,
   .mini-grid,
+  .section-links-grid,
   .details-summary-grid {
     grid-template-columns: 1fr;
   }
@@ -919,6 +1002,13 @@ tbody tr:hover {
   .page-shell {
     width: min(100% - 20px, 1200px);
     padding: 18px 0 28px;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 10px;
+    z-index: 40;
+    margin-bottom: 14px;
   }
 
   .hero {
@@ -975,11 +1065,30 @@ tbody tr:hover {
   }
 
   .menu-panel {
-    width: min(100%, 320px);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(88vw, 360px);
+    padding: 18px 14px 20px;
+    border-radius: 20px 0 0 20px;
+    transform: translateX(100%);
+    opacity: 1;
+    overflow-y: auto;
+  }
+
+  .contact-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .section-title {
     font-size: 1.15rem;
+  }
+
+  .menu-panel.is-open {
+    transform: translateX(0);
   }
 
   .section-subtitle,
@@ -994,15 +1103,41 @@ tbody tr:hover {
     font-size: clamp(1.55rem, 9vw, 2.2rem);
   }
 
+  .section-link-card {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .section-link-card h3 {
+    font-size: 1.05rem;
+  }
+
+  .section-link-card p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .details-stat {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
   .trend-chart {
     margin-top: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .trend-labels {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
     font-size: 0.76rem;
+    min-width: 560px;
+  }
+
+  .trend-svg {
+    min-width: 560px;
   }
 
   .bar-meta {
@@ -1069,6 +1204,47 @@ tbody tr:hover {
     width: auto;
   }
 
+  .contact-chip {
+    padding: 9px 8px;
+    min-height: 40px;
+  }
+
+  .contact-icon {
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+
+  .menu-panel {
+    width: min(92vw, 360px);
+  }
+
+  .hero,
+  .how-to-panel {
+    margin-bottom: 14px;
+  }
+
+  .how-to-panel {
+    padding: 14px;
+  }
+
+  body.has-insights .how-to-panel {
+    display: none;
+  }
+
+  body.has-insights .hero-copy {
+    max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .steps-list {
+    padding-left: 18px;
+  }
+
+  .steps-list li {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
   .drop-zone {
     padding: 20px 14px;
   }
@@ -1081,12 +1257,9 @@ tbody tr:hover {
   .charts-grid,
   .lower-grid,
   .mini-grid,
+  .section-links-grid,
   .dashboard {
     gap: 14px;
-  }
-
-  .trend-labels {
-    grid-template-columns: 1fr;
   }
 
   .table-wrapper {

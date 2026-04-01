@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spend Trends</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="topbar">
+        <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">Menu</button>
+        <div id="menu-overlay" class="menu-overlay is-hidden"></div>
+        <div id="menu-panel" class="menu-panel is-hidden">
+          <a class="menu-link" href="/">Overview</a>
+          <a class="menu-link" href="/trends.html">Spend trends</a>
+          <a class="menu-link" href="/patterns.html">Patterns</a>
+          <button id="theme-toggle" class="menu-link" type="button">Toggle dark mode</button>
+          <a id="journey-details-link" class="menu-link" href="/details.html">Journey details page</a>
+        </div>
+      </div>
+
+      <header class="hero hero-compact">
+        <div>
+          <p class="eyebrow">Spend Trends</p>
+          <h1>Your spend patterns at a glance</h1>
+          <p class="hero-copy">Daily and weekly charts live here so the main page can stay short and easy on mobile.</p>
+        </div>
+      </header>
+
+      <main id="trends-view" class="dashboard" aria-live="polite">
+        <section class="empty-panel">
+          <h2 class="section-title">No statement loaded yet</h2>
+          <p class="section-subtitle">Upload a statement on the main page first, then return here for trends.</p>
+        </section>
+      </main>
+    </div>
+
+    <script src="/menu.js"></script>
+    <script src="/dashboardShared.js"></script>
+    <script src="/trends.js"></script>
+  </body>
+</html>

@@ -12,10 +12,13 @@
         <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">
           Menu
         </button>
+        <div id="menu-overlay" class="menu-overlay is-hidden"></div>
         <div id="menu-panel" class="menu-panel is-hidden">
+          <a class="menu-link" href="/">Overview</a>
+          <a class="menu-link" href="/trends.html">Spend trends</a>
+          <a class="menu-link" href="/patterns.html">Patterns</a>
           <button id="theme-toggle" class="menu-link" type="button">Toggle dark mode</button>
           <a id="journey-details-link" class="menu-link" href="/details.html">Journey details page</a>
-          <a class="menu-link" href="/">Back to insights</a>
           <div class="menu-built-by">
             <p class="menu-built-title">Built by: Agnes Hephzibah Roche</p>
             <div class="contact-actions">
@@ -40,11 +43,6 @@
           <p class="hero-copy">
             This page keeps the full trip detail separate so the main insights page stays easy to scan.
           </p>
-          <div class="details-badges">
-            <span class="details-badge">Trip timeline</span>
-            <span class="details-badge">Leg-by-leg fares</span>
-            <span class="details-badge">Full statement view</span>
-          </div>
         </div>
       </header>
 
@@ -59,6 +57,7 @@
     </div>
 
     <script src="/menu.js"></script>
+    <script src="/dashboardShared.js"></script>
     <script src="/details.js"></script>
   </body>
 </html>

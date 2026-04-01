@@ -12,7 +12,11 @@
         <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">
           Menu
         </button>
+        <div id="menu-overlay" class="menu-overlay is-hidden"></div>
         <div id="menu-panel" class="menu-panel is-hidden">
+          <a class="menu-link" href="/">Overview</a>
+          <a class="menu-link" href="/trends.html">Spend trends</a>
+          <a class="menu-link" href="/patterns.html">Patterns</a>
           <button id="theme-toggle" class="menu-link" type="button">Toggle dark mode</button>
           <a id="journey-details-link" class="menu-link is-disabled" href="/details.html" aria-disabled="true">Journey details page</a>
           <div class="menu-built-by">
@@ -48,9 +52,6 @@
             <input id="statement-file" name="statementFile" type="file" accept=".pdf,.txt" hidden />
             <p class="drop-title">Drag, drop, and watch your travel story light up</p>
             <p class="helper-text">You can also click here to choose a `.pdf` or `.txt` statement file.</p>
-          </div>
-          <div class="drop-actions">
-            <button id="load-sample" type="button">Load sample statement</button>
           </div>
         </section>
       </header>
@@ -88,6 +89,7 @@
     </template>
 
     <script src="/menu.js"></script>
+    <script src="/dashboardShared.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

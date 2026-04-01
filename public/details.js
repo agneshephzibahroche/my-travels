@@ -1,21 +1,5 @@
 const detailsView = document.getElementById("details-view");
-const DATA_KEY = "travel-dashboard-data";
-
-function formatCurrency(value) {
-  return new Intl.NumberFormat("en-SG", {
-    style: "currency",
-    currency: "SGD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatDate(isoDate) {
-  return new Intl.DateTimeFormat("en-SG", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(`${isoDate}T00:00:00`));
-}
+const { getStoredData, formatCurrency, formatDate } = window.DashboardShared;
 
 function renderTableRows(journeys) {
   return journeys
@@ -76,13 +60,13 @@ function renderDetails(data) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const stored = sessionStorage.getItem(DATA_KEY);
-  if (!stored) {
+  const data = getStoredData();
+  if (!data) {
     return;
   }
 
   try {
-    renderDetails(JSON.parse(stored));
+    renderDetails(data);
   } catch (error) {
     detailsView.innerHTML = `
       <section class="error-panel">

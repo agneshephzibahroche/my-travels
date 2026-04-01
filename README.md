@@ -23,5 +23,4 @@ npm run dev
 ## Notes
 
 - Drop a `.pdf` or `.txt` statement onto the index page to generate the dashboard.
-- In this workspace, the sample button loads a bundled text snapshot extracted from the provided PDF.
-- PDF parsing currently relies on a local `pdftotext` installation. On hosted Vercel deployments, the sample statement and plain-text statement exports work now; fully hosted PDF parsing would need a bundled JavaScript PDF parser.
+- PDF parsing currently relies on a local `pdftotext` installation. On hosted Vercel deployments, plain-text statement exports work now; fully hosted PDF parsing would need a bundled JavaScript PDF parser.

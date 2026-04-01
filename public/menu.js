@@ -17,11 +17,35 @@
     }
 
     const hasData = Boolean(sessionStorage.getItem(DATA_KEY));
-    link.classList.toggle("is-disabled", !hasData);
-    link.setAttribute("aria-disabled", String(!hasData));
-    if (!hasData && link.getAttribute("href") === "/details.html") {
+    const hasLocalData = Boolean(localStorage.getItem(DATA_KEY));
+    const enabled = hasData || hasLocalData;
+    link.classList.toggle("is-disabled", !enabled);
+    link.setAttribute("aria-disabled", String(!enabled));
+    if (!enabled && link.getAttribute("href") === "/details.html") {
       return;
     }
+  }
+
+  function openMenu(menuButton, menuPanel, menuOverlay) {
+    menuPanel.classList.remove("is-hidden");
+    menuOverlay?.classList.remove("is-hidden");
+    requestAnimationFrame(() => {
+      menuPanel.classList.add("is-open");
+      menuOverlay?.classList.add("is-open");
+    });
+    menuButton.setAttribute("aria-expanded", "true");
+    document.body.classList.add("menu-open");
+  }
+
+  function closeMenu(menuButton, menuPanel, menuOverlay) {
+    menuPanel.classList.remove("is-open");
+    menuOverlay?.classList.remove("is-open");
+    window.setTimeout(() => {
+      menuPanel.classList.add("is-hidden");
+      menuOverlay?.classList.add("is-hidden");
+    }, 220);
+    menuButton.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("menu-open");
   }
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -29,6 +53,7 @@
 
     const menuButton = document.getElementById("menu-button");
     const menuPanel = document.getElementById("menu-panel");
+    const menuOverlay = document.getElementById("menu-overlay");
     const themeToggle = document.getElementById("theme-toggle");
     const detailsLink = document.getElementById("journey-details-link");
 
@@ -36,15 +61,26 @@
 
     if (menuButton && menuPanel) {
       menuButton.addEventListener("click", () => {
-        const isHidden = menuPanel.classList.toggle("is-hidden");
-        menuButton.setAttribute("aria-expanded", String(!isHidden));
+        const isOpen = menuPanel.classList.contains("is-open");
+        if (isOpen) {
+          closeMenu(menuButton, menuPanel, menuOverlay);
+        } else {
+          openMenu(menuButton, menuPanel, menuOverlay);
+        }
       });
 
       document.addEventListener("click", (event) => {
-        if (!menuPanel.contains(event.target) && !menuButton.contains(event.target)) {
-          menuPanel.classList.add("is-hidden");
-          menuButton.setAttribute("aria-expanded", "false");
+        if (
+          menuPanel.classList.contains("is-open") &&
+          !menuPanel.contains(event.target) &&
+          !menuButton.contains(event.target)
+        ) {
+          closeMenu(menuButton, menuPanel, menuOverlay);
         }
+      });
+
+      menuOverlay?.addEventListener("click", () => {
+        closeMenu(menuButton, menuPanel, menuOverlay);
       });
     }
 
@@ -63,6 +99,12 @@
         }
       });
     }
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menuPanel?.classList.contains("is-open")) {
+        closeMenu(menuButton, menuPanel, menuOverlay);
+      }
+    });
 
     window.addEventListener("storage", updateJourneyLink);
   });

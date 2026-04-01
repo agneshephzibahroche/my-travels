@@ -114,6 +114,17 @@ body {
   opacity: 1;
 }
 
+.menu-nav-group {
+  display: grid;
+  gap: 8px;
+}
+
+.menu-utility-group {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
 .menu-link {
   display: block;
   width: 100%;
@@ -132,6 +143,22 @@ button.menu-link {
   background: rgba(255, 255, 255, 0.92);
   color: var(--ink);
   box-shadow: none;
+}
+
+.theme-toggle-button {
+  display: inline-flex;
+  width: auto;
+  align-self: flex-start;
+  background: linear-gradient(135deg, rgba(76, 181, 255, 0.18), rgba(255, 122, 89, 0.18));
+  border-color: rgba(76, 181, 255, 0.22);
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.theme-toggle-button:hover {
+  background: linear-gradient(135deg, rgba(76, 181, 255, 0.26), rgba(255, 122, 89, 0.24));
 }
 
 .menu-link.is-disabled {
@@ -222,6 +249,16 @@ button.menu-link {
 :root[data-theme="dark"] button.menu-link {
   background: #273150;
   color: #f5f7ff;
+}
+
+:root[data-theme="dark"] .theme-toggle-button {
+  background: linear-gradient(135deg, rgba(85, 183, 255, 0.22), rgba(255, 143, 112, 0.2));
+  border-color: rgba(111, 194, 255, 0.24);
+  color: #f5f7ff;
+}
+
+:root[data-theme="dark"] .theme-toggle-button:hover {
+  background: linear-gradient(135deg, rgba(85, 183, 255, 0.3), rgba(255, 143, 112, 0.26));
 }
 
 :root[data-theme="dark"] .menu-built-title {

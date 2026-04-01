@@ -808,6 +808,33 @@ button:hover {
   margin-bottom: 20px;
 }
 
+.how-to-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.how-to-summary::-webkit-details-marker {
+  display: none;
+}
+
+.how-to-chevron {
+  font-size: 1rem;
+  color: var(--muted);
+  transition: transform 160ms ease;
+}
+
+.how-to-panel[open] .how-to-chevron {
+  transform: rotate(180deg);
+}
+
+.how-to-content {
+  margin-top: 8px;
+}
+
 .bar-row {
   display: grid;
   gap: 8px;

@@ -53,7 +53,6 @@ function renderDashboard(data, activePath) {
       note: `Train ${data.analytics.spendShare.train}% | Bus ${data.analytics.spendShare.bus}%`,
     },
   ];
-
   dashboard.classList.remove("loading");
   dashboard.innerHTML = `
     <section class="metrics-grid">
@@ -92,7 +91,6 @@ function renderDashboard(data, activePath) {
       <p class="section-subtitle">The fastest way to understand your statement.</p>
       ${renderMiniCards(quickCards)}
     </section>
-
     <section class="section-links-grid">
       <a class="section-link-card trends-card" href="/trends.html">
         <span class="section-link-kicker">Sub page</span>
@@ -109,17 +107,6 @@ function renderDashboard(data, activePath) {
         <h3>Journey details</h3>
         <p>Full trip rows, leg-level fares, and the detailed statement view.</p>
       </a>
-    </section>
-
-    <section class="panel">
-      <h2 class="section-title">Overview only</h2>
-      <p class="section-subtitle">
-        This page stays intentionally short on mobile. Open the sub pages above for the deeper sections.
-      </p>
-      <div class="metadata">
-        <span><strong>Loaded path:</strong> ${activePath}</span>
-        <span><strong>Total from statement:</strong> ${formatCurrency(data.metadata.totalCharged)}</span>
-      </div>
     </section>
   `;
 }

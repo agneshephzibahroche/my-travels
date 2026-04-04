@@ -16,6 +16,37 @@ function renderTableRows(journeys) {
     .join("");
 }
 
+function renderMobileCards(journeys) {
+  return journeys
+    .map(
+      (journey) => `
+        <article class="journey-card">
+          <div class="journey-card-topline">
+            <div>
+              <p class="journey-card-date">${formatDate(journey.isoDate)}</p>
+              <p class="journey-card-weekday">${journey.weekday || ""}</p>
+            </div>
+            <p class="journey-card-fare">${formatCurrency(journey.totalFare)}</p>
+          </div>
+          <p class="journey-card-route">${journey.route}</p>
+          <div class="journey-leg-list">
+            ${journey.legs
+              .map(
+                (leg) => `
+                  <div class="journey-leg-item">
+                    <span class="journey-leg-time">${leg.time}</span>
+                    <span class="journey-leg-copy">${leg.modeLabel}: ${leg.route}</span>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
 function renderDetails(data) {
   detailsView.innerHTML = `
     <section class="panel details-summary-panel">
@@ -42,6 +73,7 @@ function renderDetails(data) {
         <span><strong>Statement period:</strong> ${data.metadata.period || "N/A"}</span>
         <span><strong>Total:</strong> ${formatCurrency(data.metadata.totalCharged || 0)}</span>
       </div>
+      <div class="journey-cards">${renderMobileCards(data.journeys || [])}</div>
       <div class="table-wrapper">
         <table>
           <thead>

@@ -12,18 +12,39 @@
 
   function updateJourneyLink() {
     const link = document.getElementById("journey-details-link");
-    if (!link) {
+    const tabLink = document.querySelector(".mobile-details-tab");
+    if (!link && !tabLink) {
       return;
     }
 
     const hasData = Boolean(sessionStorage.getItem(DATA_KEY));
     const hasLocalData = Boolean(localStorage.getItem(DATA_KEY));
     const enabled = hasData || hasLocalData;
-    link.classList.toggle("is-disabled", !enabled);
-    link.setAttribute("aria-disabled", String(!enabled));
-    if (!enabled && link.getAttribute("href") === "/details.html") {
+    if (link) {
+      link.classList.toggle("is-disabled", !enabled);
+      link.setAttribute("aria-disabled", String(!enabled));
+    }
+    if (tabLink) {
+      tabLink.classList.toggle("is-disabled", !enabled);
+      tabLink.setAttribute("aria-disabled", String(!enabled));
+    }
+  }
+
+  function updateActiveTab() {
+    const currentPage = document.body.dataset.page;
+    if (!currentPage) {
       return;
     }
+
+    document.querySelectorAll(".mobile-tab").forEach((tab) => {
+      const isActive = tab.dataset.tab === currentPage;
+      tab.classList.toggle("is-active", isActive);
+      if (isActive) {
+        tab.setAttribute("aria-current", "page");
+      } else {
+        tab.removeAttribute("aria-current");
+      }
+    });
   }
 
   function openMenu(menuButton, menuPanel, menuOverlay) {
@@ -56,8 +77,10 @@
     const menuOverlay = document.getElementById("menu-overlay");
     const themeToggle = document.getElementById("theme-toggle");
     const detailsLink = document.getElementById("journey-details-link");
+    const mobileDetailsTab = document.querySelector(".mobile-details-tab");
 
     updateJourneyLink();
+    updateActiveTab();
 
     if (menuButton && menuPanel) {
       menuButton.addEventListener("click", () => {
@@ -95,6 +118,14 @@
     if (detailsLink) {
       detailsLink.addEventListener("click", (event) => {
         if (detailsLink.getAttribute("aria-disabled") === "true") {
+          event.preventDefault();
+        }
+      });
+    }
+
+    if (mobileDetailsTab) {
+      mobileDetailsTab.addEventListener("click", (event) => {
+        if (mobileDetailsTab.getAttribute("aria-disabled") === "true") {
           event.preventDefault();
         }
       });

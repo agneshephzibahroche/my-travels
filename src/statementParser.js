@@ -56,6 +56,10 @@ function getWeekStart(isoDate) {
   return date.toISOString().slice(0, 10);
 }
 
+function isWeekend(weekday) {
+  return weekday === "Sat" || weekday === "Sun";
+}
+
 function parsePdfText(rawText) {
   const lines = rawText
     .split(/\r?\n/)
@@ -231,6 +235,14 @@ function parsePdfText(rawText) {
     accumulator[label].spend += leg.fare;
     return accumulator;
   }, {});
+  const weekdayWeekendSpend = journeys.reduce(
+    (accumulator, journey) => {
+      const bucket = isWeekend(journey.weekday) ? "weekend" : "weekday";
+      accumulator[bucket] += journey.totalFare;
+      return accumulator;
+    },
+    { weekday: 0, weekend: 0 }
+  );
 
   const roundedTotalsByMode = Object.fromEntries(
     Object.entries(totalsByMode).map(([mode, spend]) => [mode, Number(spend.toFixed(2))])
@@ -260,6 +272,65 @@ function parsePdfText(rawText) {
   const highestSpendDay = [...sortedDailySpend].sort((left, right) => right.spend - left.spend)[0] || null;
   const mostFrequentRoute = sortedRouteFrequency[0] || null;
   const mostUsedService = sortedServiceFrequency[0] || null;
+  const mostExpensiveRoute =
+    [...sortedRouteFrequency].sort((left, right) => right.spend - left.spend || right.trips - left.trips)[0] ||
+    null;
+  const weekdaySpendTotal = Number(weekdayWeekendSpend.weekday.toFixed(2));
+  const weekendSpendTotal = Number(weekdayWeekendSpend.weekend.toFixed(2));
+  const weekdayWeekendSplit = {
+    weekdaySpend: weekdaySpendTotal,
+    weekendSpend: weekendSpendTotal,
+    weekdayShare: metadata.totalCharged
+      ? Number(((weekdaySpendTotal / metadata.totalCharged) * 100).toFixed(1))
+      : 0,
+    weekendShare: metadata.totalCharged
+      ? Number(((weekendSpendTotal / metadata.totalCharged) * 100).toFixed(1))
+      : 0,
+  };
+  const likelyCommute =
+    sortedRouteFrequency.find((route) => route.trips >= 2) || null;
+  const unusualTrips = journeys
+    .filter(
+      (journey) =>
+        journey.totalFare >= 2 &&
+        sortedRouteFrequency.find((route) => route.route === journey.route)?.trips === 1
+    )
+    .sort((left, right) => right.totalFare - left.totalFare)
+    .slice(0, 3)
+    .map((journey) => ({
+      isoDate: journey.isoDate,
+      route: journey.route,
+      totalFare: Number(journey.totalFare.toFixed(2)),
+    }));
+  const topTakeaways = [
+    highestSpendDay
+      ? {
+          label: "Highest spend day",
+          value: formatIsoDate(highestSpendDay.isoDate),
+          note: `${highestSpendDay.spend.toFixed(2)} in fares`,
+        }
+      : null,
+    mostExpensiveRoute
+      ? {
+          label: "Biggest cost route",
+          value: mostExpensiveRoute.route,
+          note: `${formatAmount(mostExpensiveRoute.spend)} across ${mostExpensiveRoute.trips} trips`,
+        }
+      : null,
+    likelyCommute
+      ? {
+          label: "Likely routine trip",
+          value: likelyCommute.route,
+          note: `${likelyCommute.trips} repeated trips`,
+        }
+      : null,
+    {
+      label: "Weekday vs weekend",
+      value:
+        weekdayWeekendSplit.weekdaySpend >= weekdayWeekendSplit.weekendSpend ? "Mostly weekday travel" : "Mostly weekend travel",
+      note: `${weekdayWeekendSplit.weekdayShare}% weekday | ${weekdayWeekendSplit.weekendShare}% weekend`,
+    },
+  ].filter(Boolean);
   const busShare = metadata.totalCharged
     ? Number(((roundedTotalsByMode.Bus || 0) / metadata.totalCharged * 100).toFixed(1))
     : 0;
@@ -273,8 +344,20 @@ function parsePdfText(rawText) {
     mostFrequentRoute
       ? `Your most frequent journey grouping was "${mostFrequentRoute.route}", appearing ${mostFrequentRoute.trips} times and costing ${mostFrequentRoute.spend.toFixed(2)} overall.`
       : null,
+    mostExpensiveRoute
+      ? `The route costing you the most overall was "${mostExpensiveRoute.route}", adding up to ${mostExpensiveRoute.spend.toFixed(2)}.`
+      : null,
     mostUsedService
       ? `Your most repeated leg pattern was "${mostUsedService.label}", used ${mostUsedService.uses} times for ${mostUsedService.spend.toFixed(2)} in total.`
+      : null,
+    likelyCommute
+      ? `A likely routine trip is "${likelyCommute.route}" because it appears ${likelyCommute.trips} times in this statement.`
+      : null,
+    metadata.totalCharged
+      ? `You spent ${weekdayWeekendSplit.weekdayShare}% on weekdays and ${weekdayWeekendSplit.weekendShare}% on weekends.`
+      : null,
+    unusualTrips.length
+      ? `Your priciest one-off trip was "${unusualTrips[0].route}" on ${unusualTrips[0].isoDate}, costing ${unusualTrips[0].totalFare.toFixed(2)}.`
       : null,
     `Train travel made up ${trainShare}% of spend, while bus travel made up ${busShare}% of spend.`,
   ].filter(Boolean);
@@ -317,7 +400,12 @@ function parsePdfText(rawText) {
     analytics: {
       highestSpendDay,
       mostFrequentRoute,
+      mostExpensiveRoute,
       mostUsedService,
+      likelyCommute,
+      unusualTrips,
+      weekdayWeekendSplit,
+      topTakeaways,
       routeFrequency: sortedRouteFrequency,
       serviceFrequency: sortedServiceFrequency,
       conclusions,
@@ -329,6 +417,15 @@ function parsePdfText(rawText) {
     journeys,
     legs: legRows,
   };
+}
+
+function formatIsoDate(isoDate) {
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function formatAmount(value) {
+  return value.toFixed(2);
 }
 
 function parseStatementPdf(pdfPath) {

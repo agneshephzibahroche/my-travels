@@ -6,7 +6,7 @@
     <title>Travel Statement Dashboard</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
+  <body data-page="overview">
     <div class="page-shell">
       <div class="topbar">
         <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">
@@ -88,6 +88,21 @@
         </section>
       </main>
     </div>
+
+    <nav class="mobile-tabbar" aria-label="Mobile page navigation">
+      <a class="mobile-tab" data-tab="overview" href="/">
+        <span class="mobile-tab-label">Overview</span>
+      </a>
+      <a class="mobile-tab" data-tab="trends" href="/trends.html">
+        <span class="mobile-tab-label">Trends</span>
+      </a>
+      <a class="mobile-tab" data-tab="patterns" href="/patterns.html">
+        <span class="mobile-tab-label">Patterns</span>
+      </a>
+      <a class="mobile-tab mobile-details-tab is-disabled" data-tab="details" href="/details.html" aria-disabled="true">
+        <span class="mobile-tab-label">Details</span>
+      </a>
+    </nav>
 
     <template id="card-template">
       <article class="metric-card">

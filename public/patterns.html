@@ -6,7 +6,7 @@
     <title>Travel Patterns</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body>
+  <body data-page="patterns">
     <div class="page-shell">
       <div class="topbar">
         <button id="menu-button" class="menu-button" type="button" aria-expanded="false" aria-controls="menu-panel">Menu</button>
@@ -42,7 +42,6 @@
         <div>
           <p class="eyebrow">Patterns</p>
           <h1>Repeated routes, services, and conclusions</h1>
-          <p class="hero-copy">This page keeps the pattern analysis separate so it’s easier to browse on a phone.</p>
         </div>
       </header>
 
@@ -53,6 +52,21 @@
         </section>
       </main>
     </div>
+
+    <nav class="mobile-tabbar" aria-label="Mobile page navigation">
+      <a class="mobile-tab" data-tab="overview" href="/">
+        <span class="mobile-tab-label">Overview</span>
+      </a>
+      <a class="mobile-tab" data-tab="trends" href="/trends.html">
+        <span class="mobile-tab-label">Trends</span>
+      </a>
+      <a class="mobile-tab" data-tab="patterns" href="/patterns.html">
+        <span class="mobile-tab-label">Patterns</span>
+      </a>
+      <a class="mobile-tab mobile-details-tab" data-tab="details" href="/details.html">
+        <span class="mobile-tab-label">Details</span>
+      </a>
+    </nav>
 
     <script src="/menu.js"></script>
     <script src="/dashboardShared.js"></script>

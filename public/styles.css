@@ -40,11 +40,19 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
   background:
     radial-gradient(circle at 10% 10%, rgba(255, 122, 89, 0.34), transparent 22%),
     radial-gradient(circle at 88% 14%, rgba(76, 181, 255, 0.28), transparent 24%),
@@ -56,7 +64,8 @@ body {
 .page-shell {
   width: min(1200px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 32px 0 48px;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 0 calc(48px + env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
 }
 
 .topbar {
@@ -64,6 +73,10 @@ body {
   justify-content: flex-end;
   position: relative;
   margin-bottom: 18px;
+}
+
+.mobile-tabbar {
+  display: none;
 }
 
 .menu-overlay {
@@ -103,6 +116,7 @@ body {
   transform: translateY(-8px);
   opacity: 0;
   transition: transform 220ms ease, opacity 220ms ease;
+  -webkit-overflow-scrolling: touch;
 }
 
 .menu-panel.is-hidden {
@@ -431,6 +445,7 @@ button:hover {
   text-align: center;
   cursor: pointer;
   transition: border-color 140ms ease, background 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+  touch-action: manipulation;
 }
 
 .drop-zone:hover,
@@ -468,6 +483,7 @@ button:hover {
 .dashboard {
   display: grid;
   gap: 20px;
+  contain: layout paint;
 }
 
 .dashboard.is-hidden {
@@ -606,6 +622,10 @@ button:hover {
   overflow: hidden;
 }
 
+.journey-cards {
+  display: none;
+}
+
 .details-table-panel::before {
   content: "";
   position: absolute;
@@ -732,6 +752,24 @@ button:hover {
     var(--panel);
 }
 
+.compact-panel {
+  padding: 18px;
+}
+
+.collapsible-panel {
+  padding: 18px;
+}
+
+.collapsible-panel .section-subtitle,
+.collapsible-panel .insight-list {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.collapsible-subtitle {
+  margin-top: 10px;
+}
+
 .section-title {
   margin: 0;
   font-size: 1.3rem;
@@ -828,6 +866,10 @@ button:hover {
 }
 
 .how-to-panel[open] .how-to-chevron {
+  transform: rotate(180deg);
+}
+
+.collapsible-panel[open] .how-to-chevron {
   transform: rotate(180deg);
 }
 
@@ -946,6 +988,19 @@ button:hover {
   margin-top: 10px;
 }
 
+.compact-takeaways {
+  margin-top: 12px;
+}
+
+.compact-takeaways li {
+  padding: 10px 0;
+  line-height: 1.45;
+}
+
+.compact-takeaways strong {
+  font-size: 0.98rem;
+}
+
 .insight-label {
   display: block;
   margin-bottom: 6px;
@@ -959,6 +1014,85 @@ button:hover {
   overflow-x: auto;
   margin-top: 18px;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.journey-card {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(146, 166, 209, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(242, 247, 255, 0.95));
+  box-shadow: 0 16px 36px rgba(31, 36, 68, 0.08);
+}
+
+.journey-card-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.journey-card-date,
+.journey-card-weekday,
+.journey-card-fare,
+.journey-card-route {
+  margin: 0;
+}
+
+.journey-card-date {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.journey-card-weekday {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.journey-card-fare {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 122, 89, 0.14);
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.journey-card-route {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.journey-leg-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.journey-leg-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(104, 143, 255, 0.08);
+}
+
+.journey-leg-time {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.journey-leg-copy {
+  color: var(--ink);
+  line-height: 1.5;
 }
 
 table {
@@ -989,6 +1123,21 @@ tbody tr:hover {
 
 :root[data-theme="dark"] tbody tr:hover {
   background: rgba(255, 255, 255, 0.04);
+}
+
+:root[data-theme="dark"] .journey-card {
+  background: linear-gradient(180deg, rgba(26, 34, 58, 0.96), rgba(19, 26, 47, 0.98));
+  border-color: rgba(112, 141, 219, 0.24);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="dark"] .journey-card-fare {
+  background: rgba(255, 143, 112, 0.18);
+  color: #f7f2ff;
+}
+
+:root[data-theme="dark"] .journey-leg-item {
+  background: rgba(87, 125, 221, 0.16);
 }
 
 :root[data-theme="dark"] .mode-pill.train {
@@ -1065,7 +1214,7 @@ tbody tr:hover {
 @media (max-width: 720px) {
   .page-shell {
     width: min(100% - 20px, 1200px);
-    padding: 18px 0 28px;
+    padding: calc(18px + env(safe-area-inset-top, 0px)) 0 calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   .topbar {
@@ -1111,6 +1260,14 @@ tbody tr:hover {
     padding: 16px;
   }
 
+  .compact-panel {
+    padding: 14px;
+  }
+
+  .collapsible-panel {
+    padding: 14px;
+  }
+
   .metric-card {
     padding: 16px;
   }
@@ -1139,12 +1296,60 @@ tbody tr:hover {
     transform: translateX(100%);
     opacity: 1;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .contact-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .mobile-tabbar {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 45;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid rgba(152, 170, 210, 0.24);
+    border-radius: 22px;
+    background: rgba(250, 252, 255, 0.86);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 18px 42px rgba(26, 35, 72, 0.16);
+  }
+
+  .mobile-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 8px;
+    border-radius: 16px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab:active {
+    transform: scale(0.98);
+  }
+
+  .mobile-tab.is-active {
+    background: linear-gradient(135deg, rgba(104, 143, 255, 0.16), rgba(255, 122, 89, 0.16));
+    color: var(--ink);
+  }
+
+  .mobile-tab.is-disabled {
+    opacity: 0.45;
+    pointer-events: none;
   }
 
   .section-title {
@@ -1190,6 +1395,7 @@ tbody tr:hover {
     margin-top: 16px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 
   .trend-labels {
@@ -1238,7 +1444,7 @@ tbody tr:hover {
 
   .page-shell {
     width: calc(100% - 16px);
-    padding: 14px 0 24px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 0 calc(102px + env(safe-area-inset-bottom, 0px));
   }
 
   .eyebrow {
@@ -1262,6 +1468,7 @@ tbody tr:hover {
   button {
     width: 100%;
     padding: 13px 16px;
+    touch-action: manipulation;
   }
 
   .topbar .menu-button {
@@ -1326,7 +1533,44 @@ tbody tr:hover {
     gap: 14px;
   }
 
+  .journey-cards {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
   .table-wrapper {
+    display: none;
     margin-top: 14px;
   }
+
+  .mobile-tabbar {
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    gap: 6px;
+    padding: 7px;
+    border-radius: 20px;
+  }
+
+  .mobile-tab {
+    min-height: 42px;
+    padding: 9px 6px;
+    font-size: 0.76rem;
+  }
+}
+
+:root[data-theme="dark"] .mobile-tabbar {
+  background: rgba(18, 24, 42, 0.92);
+  border-color: rgba(99, 121, 182, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="dark"] .mobile-tab {
+  color: #b9c7ea;
+}
+
+:root[data-theme="dark"] .mobile-tab.is-active {
+  background: linear-gradient(135deg, rgba(78, 127, 255, 0.28), rgba(255, 143, 112, 0.2));
+  color: #f7f2ff;
 }

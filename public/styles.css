@@ -80,6 +80,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
+  background: #fff0d6;
 }
 
 body {
@@ -359,6 +360,10 @@ button.menu-link {
     radial-gradient(circle at 22% 82%, rgba(68, 215, 182, 0.08), transparent 22%),
     radial-gradient(circle at 88% 78%, rgba(245, 196, 81, 0.06), transparent 18%),
     linear-gradient(180deg, #131a2d 0%, #0f1628 46%, #0a0f1c 100%);
+}
+
+:root[data-theme="dark"] {
+  background: #131a2d;
 }
 
 :root[data-theme="dark"] body::before {

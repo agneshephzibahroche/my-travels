@@ -5,6 +5,14 @@
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
+    const themeColor = theme === "dark" ? "#131a2d" : "#fff0d6";
+    let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (!themeColorMeta) {
+      themeColorMeta = document.createElement("meta");
+      themeColorMeta.name = "theme-color";
+      document.head.appendChild(themeColorMeta);
+    }
+    themeColorMeta.setAttribute("content", themeColor);
   }
 
   function readTheme() {

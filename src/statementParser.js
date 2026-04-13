@@ -1,27 +1,5 @@
 const fs = require("fs");
-const os = require("os");
-const path = require("path");
-const { spawnSync } = require("child_process");
-
-const PDFTOTEXT_CANDIDATES = [
-  "C:/Users/User/AppData/Local/Programs/MiKTeX/miktex/bin/x64/pdftotext.exe",
-  "pdftotext",
-];
-
-function choosePdfToText() {
-  for (const candidate of PDFTOTEXT_CANDIDATES) {
-    if (candidate.endsWith(".exe") && fs.existsSync(candidate)) {
-      return candidate;
-    }
-
-    const result = spawnSync(candidate, ["-v"], { encoding: "utf8" });
-    if (!result.error) {
-      return candidate;
-    }
-  }
-
-  throw new Error("Unable to locate pdftotext. Install it or update the parser.");
-}
+const PDFParser = require("pdf2json");
 
 function moneyToNumber(value) {
   const match = String(value).match(/-?\d+(?:\.\d+)?/);
@@ -60,47 +38,84 @@ function isWeekend(weekday) {
   return weekday === "Sat" || weekday === "Sun";
 }
 
-function parsePdfText(rawText) {
-  const lines = rawText
+function formatIsoDate(isoDate) {
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function formatAmount(value) {
+  return value.toFixed(2);
+}
+
+function splitAndCleanLines(rawText) {
+  return rawText
     .split(/\r?\n/)
-    .map((line) => line.replace(/\f/g, "").replace(/\s+$/g, ""));
+    .map((line) => line.replace(/\f/g, "").trim())
+    .filter((line) => {
+      if (!line) {
+        return false;
+      }
 
-  const cleanLines = lines.filter((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      return false;
-    }
+      return ![
+        "STATEMENT GENERATED ON",
+        "PAGE 1 OF 2",
+        "PAGE 2 OF 2",
+        "Date             Journey                                                                      Charges",
+        "Date       Journey                                             Charges",
+        "Only public transit transactions will be reflected in this statement.",
+      ].includes(line);
+    })
+    .filter((line) => !/^----------------Page \(\d+\) Break----------------$/.test(line));
+}
 
-    return ![
-      "STATEMENT GENERATED ON",
-      "PAGE 1 OF 2",
-      "PAGE 2 OF 2",
-      "Date             Journey                                                                      Charges",
-      "Date             Journey                                                                      Charges",
-      "Only public transit transactions will be reflected in this statement.",
-    ].includes(trimmed);
-  });
-
+function extractMetadata(cleanLines) {
   const generatedOnIndex = cleanLines.findIndex((line) =>
-    /^\d{2} \w{3} \d{4}$/.test(line.trim())
+    /^\d{2} \w{3} \d{4}$/.test(line)
   );
   const periodLine = cleanLines.find((line) =>
-    /^\d{2} \w{3} \d{4} - \d{2} \w{3} \d{4}$/.test(line.trim())
+    /^\d{2} \w{3} \d{4} - \d{2} \w{3} \d{4}$/.test(line)
   );
-  const totalLine = cleanLines.find((line) => /^Total:\s+\$\s*[\d.]+$/.test(line.trim()));
+  const totalLine = cleanLines.find((line) => /^Total:\s+\$\s*[\d.]+$/.test(line));
+  const splitTotalIndex = cleanLines.findIndex((line) => line === "Total:");
+  const splitTotalLine =
+    splitTotalIndex >= 0 && /^\$\s*[\d.]+$/.test(cleanLines[splitTotalIndex + 1] || "")
+      ? cleanLines[splitTotalIndex + 1]
+      : null;
 
-  const metadata = {
-    generatedOn: generatedOnIndex >= 0 ? cleanLines[generatedOnIndex].trim() : null,
-    period: periodLine ? periodLine.trim() : null,
-    totalCharged: totalLine ? moneyToNumber(totalLine) : 0,
+  return {
+    generatedOn: generatedOnIndex >= 0 ? cleanLines[generatedOnIndex] : null,
+    period: periodLine || null,
+    totalCharged: totalLine
+      ? moneyToNumber(totalLine)
+      : splitTotalLine
+        ? moneyToNumber(splitTotalLine)
+        : 0,
   };
+}
 
+function buildJourney(displayDate, weekday, route, totalFare, legs) {
+  const uniqueModes = [...new Set(legs.map((leg) => leg.mode))];
+
+  return {
+    date: displayDate,
+    isoDate: toIsoDate(displayDate),
+    weekday,
+    route,
+    totalFare,
+    legs,
+    legCount: legs.length,
+    primaryMode:
+      uniqueModes.length === 1 ? uniqueModes[0] : uniqueModes.length > 1 ? "Mixed" : "Unknown",
+  };
+}
+
+function parseInlineJourneys(cleanLines) {
   const journeys = [];
 
   for (let index = 0; index < cleanLines.length; index += 1) {
     const line = cleanLines[index];
     const headerMatch = line.match(
-      /^\s*(\d{2} \w{3} \d{4})\s+(.+?)\s+\$\s*([\d.]+)\s*$/
+      /^(\d{2} \w{3} \d{4})\s+(.+?)\s+\$\s*([\d.]+)$/
     );
 
     if (!headerMatch) {
@@ -109,7 +124,7 @@ function parsePdfText(rawText) {
 
     const [, displayDate, route, chargeText] = headerMatch;
     const weekdayLine = cleanLines[index + 1] || "";
-    const weekdayMatch = weekdayLine.match(/^\s*\((\w{3})\)\s*$/);
+    const weekdayMatch = weekdayLine.match(/^\((\w{3})\)$/);
     const legs = [];
     let cursor = index + (weekdayMatch ? 2 : 1);
 
@@ -117,14 +132,14 @@ function parsePdfText(rawText) {
       const candidate = cleanLines[cursor];
 
       if (
-        /^\s*(\d{2} \w{3} \d{4})\s+/.test(candidate) ||
-        /^\s*Total:\s+\$\s*[\d.]+$/.test(candidate)
+        /^(\d{2} \w{3} \d{4})\s+/.test(candidate) ||
+        /^Total:\s+\$\s*[\d.]+$/.test(candidate)
       ) {
         break;
       }
 
       const legMatch = candidate.match(
-        /^\s*(\d{2}:\d{2} [AP]M)\s+(Train|Bus(?: \d+)?)\s+(.+?)\s+\$\s*([\d.]+)\s*$/
+        /^(\d{2}:\d{2} [AP]M)\s+(Train|Bus(?: \d+)?)\s+(.+?)\s+\$\s*([\d.]+)$/
       );
 
       if (legMatch) {
@@ -145,24 +160,94 @@ function parsePdfText(rawText) {
       cursor += 1;
     }
 
-    const totalFare = moneyToNumber(chargeText);
-    const uniqueModes = [...new Set(legs.map((leg) => leg.mode))];
-
-    journeys.push({
-      date: displayDate,
-      isoDate: toIsoDate(displayDate),
-      weekday: weekdayMatch ? weekdayMatch[1] : null,
-      route,
-      totalFare,
-      legs,
-      legCount: legs.length,
-      primaryMode:
-        uniqueModes.length === 1 ? uniqueModes[0] : uniqueModes.length > 1 ? "Mixed" : "Unknown",
-    });
+    journeys.push(
+      buildJourney(
+        displayDate,
+        weekdayMatch ? weekdayMatch[1] : null,
+        route,
+        moneyToNumber(chargeText),
+        legs
+      )
+    );
 
     index = cursor - 1;
   }
 
+  return journeys;
+}
+
+function parseStackedJourneys(cleanLines) {
+  const journeys = [];
+
+  for (let index = 0; index < cleanLines.length; index += 1) {
+    const displayDate = cleanLines[index];
+    const weekdayLine = cleanLines[index + 1];
+    const route = cleanLines[index + 2];
+
+    if (!/^\d{2} \w{3} \d{4}$/.test(displayDate || "")) {
+      continue;
+    }
+
+    const weekdayMatch = String(weekdayLine || "").match(/^\((\w{3})\)$/);
+    if (!weekdayMatch || !route || /^\d{2} \w{3} \d{4} - \d{2} \w{3} \d{4}$/.test(route)) {
+      continue;
+    }
+
+    const legs = [];
+    let totalFare = null;
+    let cursor = index + 3;
+
+    while (cursor < cleanLines.length) {
+      const candidate = cleanLines[cursor];
+
+      if (/^\d{2} \w{3} \d{4}$/.test(candidate) || /^Total:\s+\$\s*[\d.]+$/.test(candidate)) {
+        break;
+      }
+
+      const timeModeMatch = candidate.match(/^(\d{2}:\d{2} [AP]M)\s+(Train|Bus(?: \d+)?)$/);
+      if (timeModeMatch) {
+        const nextLine = cleanLines[cursor + 1] || "";
+        const routeFareMatch = nextLine.match(/^(.+?)\s+\$\s*([\d.]+)$/);
+
+        if (routeFareMatch) {
+          const [, time, modeLabel] = timeModeMatch;
+          const [, legRoute, fareText] = routeFareMatch;
+          const mode = modeLabel.startsWith("Bus") ? "Bus" : "Train";
+          const service = mode === "Bus" ? modeLabel.replace("Bus", "").trim() : null;
+
+          legs.push({
+            time,
+            mode,
+            modeLabel,
+            service: service || null,
+            route: legRoute,
+            fare: moneyToNumber(fareText),
+          });
+
+          cursor += 2;
+          continue;
+        }
+      }
+
+      if (/^\$\s*[\d.]+$/.test(candidate)) {
+        totalFare = moneyToNumber(candidate);
+        cursor += 1;
+        break;
+      }
+
+      cursor += 1;
+    }
+
+    if (legs.length > 0 && totalFare !== null) {
+      journeys.push(buildJourney(displayDate, weekdayMatch[1], route, totalFare, legs));
+      index = cursor - 1;
+    }
+  }
+
+  return journeys;
+}
+
+function buildStatementData(metadata, journeys) {
   const legRows = journeys.flatMap((journey) =>
     journey.legs.map((leg) => ({
       date: journey.date,
@@ -198,11 +283,13 @@ function parsePdfText(rawText) {
     accumulator[key] = (accumulator[key] || 0) + journey.totalFare;
     return accumulator;
   }, {});
+
   const weeklySpend = journeys.reduce((accumulator, journey) => {
     const weekStart = getWeekStart(journey.isoDate);
     accumulator[weekStart] = (accumulator[weekStart] || 0) + journey.totalFare;
     return accumulator;
   }, {});
+
   const routeFrequency = journeys.reduce((accumulator, journey) => {
     if (!accumulator[journey.route]) {
       accumulator[journey.route] = {
@@ -220,6 +307,7 @@ function parsePdfText(rawText) {
 
     return accumulator;
   }, {});
+
   const serviceFrequency = legRows.reduce((accumulator, leg) => {
     const label = leg.mode === "Bus" ? `Bus ${leg.service}` : leg.route;
     if (!accumulator[label]) {
@@ -235,6 +323,7 @@ function parsePdfText(rawText) {
     accumulator[label].spend += leg.fare;
     return accumulator;
   }, {});
+
   const weekdayWeekendSpend = journeys.reduce(
     (accumulator, journey) => {
       const bucket = isWeekend(journey.weekday) ? "weekend" : "weekday";
@@ -287,8 +376,7 @@ function parsePdfText(rawText) {
       ? Number(((weekendSpendTotal / metadata.totalCharged) * 100).toFixed(1))
       : 0,
   };
-  const likelyCommute =
-    sortedRouteFrequency.find((route) => route.trips >= 2) || null;
+  const likelyCommute = sortedRouteFrequency.find((route) => route.trips >= 2) || null;
   const unusualTrips = journeys
     .filter(
       (journey) =>
@@ -332,10 +420,10 @@ function parsePdfText(rawText) {
     },
   ].filter(Boolean);
   const busShare = metadata.totalCharged
-    ? Number(((roundedTotalsByMode.Bus || 0) / metadata.totalCharged * 100).toFixed(1))
+    ? Number((((roundedTotalsByMode.Bus || 0) / metadata.totalCharged) * 100).toFixed(1))
     : 0;
   const trainShare = metadata.totalCharged
-    ? Number(((roundedTotalsByMode.Train || 0) / metadata.totalCharged * 100).toFixed(1))
+    ? Number((((roundedTotalsByMode.Train || 0) / metadata.totalCharged) * 100).toFixed(1))
     : 0;
   const conclusions = [
     highestSpendDay
@@ -419,32 +507,70 @@ function parsePdfText(rawText) {
   };
 }
 
-function formatIsoDate(isoDate) {
-  const [year, month, day] = isoDate.split("-");
-  return `${day}/${month}/${year}`;
+function parsePdfText(rawText) {
+  const cleanLines = splitAndCleanLines(rawText);
+  const metadata = extractMetadata(cleanLines);
+  const journeys = parseInlineJourneys(cleanLines);
+  const statementJourneys = journeys.length > 0 ? journeys : parseStackedJourneys(cleanLines);
+
+  if (statementJourneys.length === 0) {
+    throw new Error("Unable to extract journeys from the statement.");
+  }
+
+  return buildStatementData(metadata, statementJourneys);
 }
 
-function formatAmount(value) {
-  return value.toFixed(2);
+function extractPdfTextFromParser(runParser) {
+  process.env.PDF2JSON_DISABLE_LOGS = "1";
+
+  return new Promise((resolve, reject) => {
+    const parser = new PDFParser(null, 1);
+    const originalWarn = console.warn;
+    const originalLog = console.log;
+    const restoreConsole = () => {
+      console.warn = originalWarn;
+      console.log = originalLog;
+    };
+
+    console.warn = () => {};
+    console.log = () => {};
+
+    parser.on("pdfParser_dataError", (error) => {
+      restoreConsole();
+      reject(error?.parserError || error);
+    });
+
+    parser.on("pdfParser_dataReady", () => {
+      const rawText = parser.getRawTextContent();
+      restoreConsole();
+
+      if (!rawText.trim()) {
+        reject(new Error("Unable to extract text from the PDF statement."));
+        return;
+      }
+
+      resolve(rawText);
+    });
+
+    try {
+      runParser(parser);
+    } catch (error) {
+      restoreConsole();
+      reject(error);
+    }
+  });
 }
 
-function parseStatementPdf(pdfPath) {
+async function parseStatementPdf(pdfPath) {
   if (!pdfPath || !fs.existsSync(pdfPath)) {
     throw new Error(`Statement PDF not found at ${pdfPath}`);
   }
 
-  const pdftotext = choosePdfToText();
-  const result = spawnSync(pdftotext, ["-layout", pdfPath, "-"], {
-    encoding: "utf8",
-    maxBuffer: 10 * 1024 * 1024,
+  const rawText = await extractPdfTextFromParser((parser) => {
+    parser.loadPDF(pdfPath, 0);
   });
 
-  const output = result.stdout || "";
-  if (!output.trim()) {
-    throw new Error("Unable to extract text from the PDF statement.");
-  }
-
-  return parsePdfText(output);
+  return parsePdfText(rawText);
 }
 
 function parseStatementText(textPath) {
@@ -455,7 +581,7 @@ function parseStatementText(textPath) {
   return parsePdfText(fs.readFileSync(textPath, "utf8"));
 }
 
-function parseStatementFile(filePath) {
+async function parseStatementFile(filePath) {
   const lowerFilePath = filePath.toLowerCase();
 
   if (lowerFilePath.endsWith(".txt")) {
@@ -469,7 +595,7 @@ function parseStatementFile(filePath) {
   throw new Error("Unsupported statement format. Use a .pdf or .txt file.");
 }
 
-function parseStatementBuffer(buffer, fileName = "statement.txt") {
+async function parseStatementBuffer(buffer, fileName = "statement.txt") {
   const lowerFileName = fileName.toLowerCase();
 
   if (lowerFileName.endsWith(".txt")) {
@@ -477,20 +603,11 @@ function parseStatementBuffer(buffer, fileName = "statement.txt") {
   }
 
   if (lowerFileName.endsWith(".pdf")) {
-    const tempPath = path.join(
-      os.tmpdir(),
-      `statement-${Date.now()}-${Math.random().toString(16).slice(2)}.pdf`
-    );
+    const rawText = await extractPdfTextFromParser((parser) => {
+      parser.parseBuffer(buffer, 0);
+    });
 
-    fs.writeFileSync(tempPath, buffer);
-
-    try {
-      return parseStatementPdf(tempPath);
-    } finally {
-      if (fs.existsSync(tempPath)) {
-        fs.unlinkSync(tempPath);
-      }
-    }
+    return parsePdfText(rawText);
   }
 
   throw new Error("Unsupported uploaded statement format. Use a .pdf or .txt file.");

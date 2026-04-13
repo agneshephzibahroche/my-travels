@@ -73,25 +73,26 @@ const server = http.createServer((request, response) => {
   if (request.method === "GET" && url.pathname === "/api/statement") {
     const statementPath = url.searchParams.get("path") || DEFAULT_STATEMENT_PATH;
 
-    try {
-      const data = parseStatementFile(statementPath);
-      sendJson(response, 200, data);
-    } catch (error) {
-      sendJson(response, 500, {
-        error: error.message,
-        statementPath,
+    parseStatementFile(statementPath)
+      .then((data) => {
+        sendJson(response, 200, data);
+      })
+      .catch((error) => {
+        sendJson(response, 500, {
+          error: error.message,
+          statementPath,
+        });
       });
-    }
 
     return;
   }
 
   if (request.method === "POST" && url.pathname === "/api/statement/upload") {
     readRequestBody(request)
-      .then((buffer) => {
+      .then(async (buffer) => {
         const fileName = request.headers["x-file-name"] || "statement.txt";
         const decodedFileName = decodeURIComponent(String(fileName));
-        const data = parseStatementBuffer(buffer, decodedFileName);
+        const data = await parseStatementBuffer(buffer, decodedFileName);
         sendJson(response, 200, {
           source: decodedFileName,
           ...data,

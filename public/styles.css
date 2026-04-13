@@ -49,6 +49,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  position: relative;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -62,6 +63,34 @@ body {
     radial-gradient(circle at 18% 78%, rgba(47, 199, 161, 0.22), transparent 24%),
     radial-gradient(circle at 84% 82%, rgba(219, 74, 143, 0.18), transparent 20%),
     linear-gradient(180deg, #fff0d6 0%, var(--bg) 44%, #fff8ef 100%);
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  left: -20vw;
+  right: -20vw;
+  pointer-events: none;
+  z-index: -1;
+  transform: translateZ(0);
+  filter: blur(10px);
+}
+
+body::before {
+  top: -14vh;
+  height: 48vh;
+  background:
+    radial-gradient(circle at 12% 22%, rgba(255, 122, 89, 0.34), transparent 20%),
+    radial-gradient(circle at 88% 18%, rgba(76, 181, 255, 0.24), transparent 24%);
+}
+
+body::after {
+  bottom: -16vh;
+  height: 40vh;
+  background:
+    radial-gradient(circle at 18% 55%, rgba(47, 199, 161, 0.18), transparent 24%),
+    radial-gradient(circle at 82% 40%, rgba(219, 74, 143, 0.14), transparent 18%);
 }
 
 .page-shell {
@@ -293,6 +322,18 @@ button.menu-link {
     radial-gradient(circle at 22% 82%, rgba(68, 215, 182, 0.08), transparent 22%),
     radial-gradient(circle at 88% 78%, rgba(245, 196, 81, 0.08), transparent 18%),
     linear-gradient(180deg, #161a2b 0%, var(--bg) 46%, #0a0d18 100%);
+}
+
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(circle at 12% 22%, rgba(255, 143, 112, 0.18), transparent 22%),
+    radial-gradient(circle at 88% 18%, rgba(85, 183, 255, 0.16), transparent 24%);
+}
+
+:root[data-theme="dark"] body::after {
+  background:
+    radial-gradient(circle at 18% 55%, rgba(68, 215, 182, 0.1), transparent 24%),
+    radial-gradient(circle at 82% 40%, rgba(245, 196, 81, 0.08), transparent 18%);
 }
 
 :root[data-theme="dark"] .menu-panel {
@@ -2055,6 +2096,23 @@ tbody tr:hover {
       radial-gradient(circle at 12% 10%, rgba(255, 122, 89, 0.28), transparent 24%),
       radial-gradient(circle at 88% 16%, rgba(76, 181, 255, 0.22), transparent 26%),
       linear-gradient(180deg, #fff0d6 0%, var(--bg) 44%, #fff8ef 100%);
+  }
+
+  body::before,
+  body::after {
+    left: -34vw;
+    right: -34vw;
+    filter: blur(16px);
+  }
+
+  body::before {
+    top: -18vh;
+    height: 44vh;
+  }
+
+  body::after {
+    bottom: -20vh;
+    height: 36vh;
   }
 
   .page-shell {

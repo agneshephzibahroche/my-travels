@@ -1,6 +1,7 @@
 (function () {
   const STORAGE_KEY = "travel-dashboard-theme";
   const DATA_KEY = "travel-dashboard-data";
+  const HISTORY_KEY = "travel-dashboard-history";
 
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
@@ -76,6 +77,7 @@
     const menuPanel = document.getElementById("menu-panel");
     const menuOverlay = document.getElementById("menu-overlay");
     const themeToggle = document.getElementById("theme-toggle");
+    const clearSavedData = document.getElementById("clear-saved-data");
     const detailsLink = document.getElementById("journey-details-link");
     const mobileDetailsTab = document.querySelector(".mobile-details-tab");
 
@@ -112,6 +114,19 @@
         const nextTheme = readTheme() === "dark" ? "light" : "dark";
         localStorage.setItem(STORAGE_KEY, nextTheme);
         applyTheme(nextTheme);
+      });
+    }
+
+    if (clearSavedData) {
+      clearSavedData.addEventListener("click", () => {
+        localStorage.removeItem(DATA_KEY);
+        localStorage.removeItem(HISTORY_KEY);
+        window.dispatchEvent(new Event("storage"));
+        if (window.location.pathname !== "/") {
+          window.location.href = "/";
+        } else {
+          window.location.reload();
+        }
       });
     }
 

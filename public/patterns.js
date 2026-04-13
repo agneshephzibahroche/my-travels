@@ -1,9 +1,11 @@
 const patternsView = document.getElementById("patterns-view");
-const { getStoredData, formatCurrency, renderBars, renderConclusionList } = window.DashboardShared;
+const { getStoredData, formatCurrency, renderBars, renderConclusionList, renderJourneyRouteLabel } =
+  window.DashboardShared;
 
 function renderPatterns(data) {
+  const routeLookup = new Map((data.journeys || []).map((journey) => [journey.route, journey]));
   const frequentRouteItems = data.analytics.routeFrequency.slice(0, 5).map((route) => ({
-    label: `${route.route} (${route.trips} trips)`,
+    label: `${renderJourneyRouteLabel(routeLookup.get(route.route) || { route: route.route, legs: [] })} (${route.trips} trips)`,
     value: route.spend,
   }));
   const frequentServiceItems = data.analytics.serviceFrequency.slice(0, 5).map((service) => ({
@@ -17,7 +19,7 @@ function renderPatterns(data) {
   }));
   const takeawayItems = (data.analytics.topTakeaways || []).slice(0, 4);
   const unusualTripItems = (data.analytics.unusualTrips || []).map((trip) => ({
-    label: `${trip.route} (${trip.isoDate})`,
+    label: `${renderJourneyRouteLabel(routeLookup.get(trip.route) || { route: trip.route, legs: [] })} (${trip.isoDate})`,
     value: trip.totalFare,
   }));
 

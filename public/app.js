@@ -6,8 +6,12 @@ const {
   formatCurrency,
   formatDate,
   renderMiniCards,
+  renderMrtLegend,
   getStoredData,
-  setStoredData,
+  getStoredHistory,
+  saveStatement,
+  loadStatementFromHistory,
+  clearAllStoredData,
 } = window.DashboardShared;
 
 function createMetricCard(label, value, note) {
@@ -21,7 +25,6 @@ function createMetricCard(label, value, note) {
 function renderDashboard(data, activePath) {
   document.body.classList.add("has-insights");
   dashboard.classList.remove("is-hidden");
-  setStoredData(data);
   window.dispatchEvent(new Event("storage"));
 
   const busiestDay = data.summary.busiestDay
@@ -53,8 +56,38 @@ function renderDashboard(data, activePath) {
       note: `Train ${data.analytics.spendShare.train}% | Bus ${data.analytics.spendShare.bus}%`,
     },
   ];
+  const history = getStoredHistory();
+  const previousStatement = history.find((entry) => entry.statementId !== data.statementId) || null;
+  const comparisonItems = previousStatement
+    ? [
+        {
+          label: "Spend change",
+          value: formatCurrency(data.summary.totalCharged - previousStatement.summary.totalCharged),
+          note: `${formatCurrency(data.summary.totalCharged)} vs ${formatCurrency(previousStatement.summary.totalCharged)}`,
+        },
+        {
+          label: "Journey change",
+          value: `${data.summary.totalJourneys - previousStatement.summary.totalJourneys}`,
+          note: `${data.summary.totalJourneys} vs ${previousStatement.summary.totalJourneys} journeys`,
+        },
+        {
+          label: "Average fare",
+          value: formatCurrency(data.summary.averageJourneyFare - previousStatement.summary.averageJourneyFare),
+          note: `${formatCurrency(data.summary.averageJourneyFare)} vs ${formatCurrency(
+            previousStatement.summary.averageJourneyFare
+          )}`,
+        },
+      ]
+    : [];
   dashboard.classList.remove("loading");
   dashboard.innerHTML = `
+    <section class="panel actions-panel">
+      <div class="actions-row">
+        <button class="secondary-action" type="button" data-action="upload-new">Upload another statement</button>
+        <button class="secondary-action secondary-action-danger" type="button" data-action="clear-data">Clear saved rides</button>
+      </div>
+    </section>
+
     <section class="metrics-grid">
       ${(() => {
         const container = document.createElement("div");
@@ -88,26 +121,56 @@ function renderDashboard(data, activePath) {
 
     <section class="panel">
       <h2 class="section-title">Quick read</h2>
-      <p class="section-subtitle">The fastest way to understand your statement.</p>
+      <p class="section-subtitle">Your station-board summary of this statement.</p>
       ${renderMiniCards(quickCards)}
     </section>
-    <section class="section-links-grid">
-      <a class="section-link-card trends-card" href="/trends.html">
-        <span class="section-link-kicker">Sub page</span>
-        <h3>Spend trends</h3>
-        <p>Daily trend, weekly totals, mode split, and route spend.</p>
-      </a>
-      <a class="section-link-card patterns-card" href="/patterns.html">
-        <span class="section-link-kicker">Sub page</span>
-        <h3>Patterns</h3>
-        <p>Frequent travels, repeated services, and statement conclusions.</p>
-      </a>
-      <a class="section-link-card details-card" href="/details.html">
-        <span class="section-link-kicker">Sub page</span>
-        <h3>Journey details</h3>
-        <p>Full trip rows, leg-level fares, and the detailed statement view.</p>
-      </a>
+
+    ${renderMrtLegend(
+      data.journeys,
+      "MRT lines on your month",
+      "Train legs are highlighted with Singapore MRT colours so repeated rail routes are easier to spot."
+    )}
+
+    <section class="lower-grid">
+      <article class="panel">
+        <h2 class="section-title">Statement comparison</h2>
+        <p class="section-subtitle">
+          ${
+            previousStatement
+              ? `See how this statement moved compared with ${previousStatement.metadata?.period || previousStatement.label}.`
+              : "Upload one more statement to unlock a month-to-month route check."
+          }
+        </p>
+        ${
+          comparisonItems.length
+            ? renderMiniCards(comparisonItems)
+            : `<p class="empty-state">One more uploaded statement will unlock comparison insights here.</p>`
+        }
+      </article>
+
+      <article class="panel">
+        <h2 class="section-title">Statement history</h2>
+        <p class="section-subtitle">Hop between saved statements without uploading again.</p>
+        <div class="history-list">
+          ${history
+            .map(
+              (entry) => `
+                <button
+                  class="history-chip ${entry.statementId === data.statementId ? "is-active" : ""}"
+                  type="button"
+                  data-action="load-history"
+                  data-statement-id="${entry.statementId}"
+                >
+                  <span class="history-chip-title">${entry.metadata?.period || entry.label}</span>
+                  <span class="history-chip-note">${formatCurrency(entry.summary.totalCharged)} · ${entry.summary.totalJourneys} journeys</span>
+                </button>
+              `
+            )
+            .join("")}
+        </div>
+      </article>
     </section>
+
   `;
 }
 
@@ -137,7 +200,8 @@ async function uploadStatementFile(file) {
     throw new Error(data.error || "Unable to upload statement.");
   }
 
-  renderDashboard(data, data.source || file.name);
+  const saved = saveStatement(data, data.source || file.name);
+  renderDashboard(saved, data.source || file.name);
 }
 
 async function handleSelectedFile(file) {
@@ -194,5 +258,39 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDashboard(stored, "Previously uploaded statement");
   } else {
     document.body.classList.remove("has-insights");
+  }
+});
+
+dashboard.addEventListener("click", (event) => {
+  const actionTarget = event.target.closest("[data-action]");
+  if (!actionTarget) {
+    return;
+  }
+
+  if (actionTarget.dataset.action === "upload-new") {
+    fileInput.click();
+    return;
+  }
+
+  if (actionTarget.dataset.action === "clear-data") {
+    clearAllStoredData();
+    dashboard.classList.add("is-hidden");
+    dashboard.classList.remove("loading");
+    dashboard.innerHTML = `
+      <section class="empty-panel">
+        <h2 class="section-title">Waiting for statement</h2>
+        <p class="section-subtitle">Upload a SimplyGo statement on this page to generate the dashboard.</p>
+      </section>
+    `;
+    document.body.classList.remove("has-insights");
+    window.dispatchEvent(new Event("storage"));
+    return;
+  }
+
+  if (actionTarget.dataset.action === "load-history") {
+    const loaded = loadStatementFromHistory(actionTarget.dataset.statementId);
+    if (loaded) {
+      renderDashboard(loaded, loaded.sourceLabel || "Saved statement");
+    }
   }
 });

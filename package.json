@@ -5,6 +5,10 @@
   "description": "Local web app for ingesting a SimplyGo transit statement and exploring travel insights.",
   "scripts": {
     "start": "node server.js",
-    "dev": "vercel dev"
+    "dev": "node server.js",
+    "vercel:dev": "vercel dev"
+  },
+  "devDependencies": {
+    "vercel": "^51.0.0"
   }
 }

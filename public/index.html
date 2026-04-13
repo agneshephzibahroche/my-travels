@@ -22,6 +22,7 @@
           </div>
           <div class="menu-utility-group">
             <button id="theme-toggle" class="menu-link theme-toggle-button" type="button">Toggle dark mode</button>
+            <button id="clear-saved-data" class="menu-link clear-data-button" type="button">Clear saved data</button>
           </div>
           <div class="menu-built-by">
             <p class="menu-built-title">Built by: Agnes Hephzibah Roche</p>
@@ -42,20 +43,20 @@
 
       <header class="hero">
         <div>
-          <p class="eyebrow">SimplyGo Transit Insights</p>
-          <h1>Drop a transit statement to generate insights</h1>
+          <p class="eyebrow">SimplyGo Route Story</p>
+          <h1>Turn your transit statement into an easy travel dashboard</h1>
           <p class="hero-copy">
-            Start by providing a statement file. The page will only generate the
-            dashboard and conclusions after you upload one.
+            Upload your SimplyGo statement and this page will turn it into a
+            friendlier summary of routes, fares, patterns, and monthly travel habits.
           </p>
         </div>
 
         <section class="path-form drop-panel">
-          <label for="statement-file">Drop statement here</label>
+          <label for="statement-file">Board your statement here</label>
           <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload statement">
             <input id="statement-file" name="statementFile" type="file" accept=".pdf,.txt" hidden />
-            <p class="drop-title">Drag, drop, and watch your travel story light up</p>
-            <p class="helper-text">You can also click here to choose a `.pdf` or `.txt` statement file.</p>
+            <p class="drop-title">Drop your travel statement and map out where your fares went</p>
+            <p class="helper-text">You can also tap here to choose a `.pdf` or `.txt` statement file.</p>
           </div>
         </section>
       </header>
@@ -81,9 +82,9 @@
 
       <main id="dashboard" class="dashboard is-hidden" aria-live="polite">
         <section class="empty-panel">
-          <h2 class="section-title">Waiting for statement</h2>
+          <h2 class="section-title">Ready when you are</h2>
           <p class="section-subtitle">
-            Upload a SimplyGo statement on this page to generate the dashboard.
+            Upload a SimplyGo statement to unlock your routes, fare trends, and travel patterns.
           </p>
         </section>
       </main>

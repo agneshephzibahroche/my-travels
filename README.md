@@ -23,4 +23,5 @@ npm run dev
 ## Notes
 
 - Drop a `.pdf` or `.txt` statement onto the index page to generate the dashboard.
-- PDF parsing currently relies on a local `pdftotext` installation. On hosted Vercel deployments, plain-text statement exports work now; fully hosted PDF parsing would need a bundled JavaScript PDF parser.
+- PDF uploads now use the bundled `pdf2json` JavaScript parser, so hosted Vercel deployments can parse SimplyGo PDFs directly.
+- Plain-text statement exports are still supported too.

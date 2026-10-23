@@ -2,6 +2,16 @@ const dashboard = document.getElementById("dashboard");
 const fileInput = document.getElementById("statement-file");
 const dropZone = document.getElementById("drop-zone");
 const cardTemplate = document.getElementById("card-template");
+const heroEyebrow = document.getElementById("hero-eyebrow");
+const heroTitle = document.getElementById("hero-title");
+const heroCopy = document.getElementById("hero-copy");
+const heroActions = document.getElementById("hero-actions");
+const defaultHero = {
+  eyebrow: heroEyebrow.textContent,
+  title: heroTitle.textContent,
+  copy: heroCopy.textContent,
+};
+const ACCEPTED_EXTENSIONS = [".pdf", ".txt"];
 const {
   formatCurrency,
   formatDate,
@@ -20,6 +30,22 @@ function createMetricCard(label, value, note) {
   fragment.querySelector(".metric-value").textContent = value;
   fragment.querySelector(".metric-note").textContent = note;
   return fragment;
+}
+
+function showStatementHero(data, periodLabel) {
+  heroEyebrow.textContent = "Your statement";
+  heroTitle.textContent = periodLabel !== "N/A" ? `${periodLabel} at a glance` : "Your travel at a glance";
+  heroCopy.textContent = `${formatCurrency(data.summary.totalCharged)} across ${data.summary.totalJourneys} journeys${
+    data.metadata.period ? ` · ${data.metadata.period}` : ""
+  }`;
+  heroActions.hidden = false;
+}
+
+function resetHero() {
+  heroEyebrow.textContent = defaultHero.eyebrow;
+  heroTitle.textContent = defaultHero.title;
+  heroCopy.textContent = defaultHero.copy;
+  heroActions.hidden = true;
 }
 
 function renderDashboard(data, activePath) {
@@ -79,15 +105,11 @@ function renderDashboard(data, activePath) {
         },
       ]
     : [];
+  showStatementHero(data, periodLabel);
   dashboard.classList.remove("loading");
+  dashboard.removeAttribute("aria-busy");
+  dropZone.removeAttribute("aria-disabled");
   dashboard.innerHTML = `
-    <section class="panel actions-panel">
-      <div class="actions-row">
-        <button class="secondary-action" type="button" data-action="upload-new">Upload another statement</button>
-        <button class="secondary-action secondary-action-danger" type="button" data-action="clear-data">Clear saved rides</button>
-      </div>
-    </section>
-
     <section class="metrics-grid">
       ${(() => {
         const container = document.createElement("div");
@@ -160,6 +182,7 @@ function renderDashboard(data, activePath) {
                   type="button"
                   data-action="load-history"
                   data-statement-id="${entry.statementId}"
+                  ${entry.statementId === data.statementId ? 'aria-current="true"' : ""}
                 >
                   <span class="history-chip-title">${entry.metadata?.period || entry.label}</span>
                   <span class="history-chip-note">${formatCurrency(entry.summary.totalCharged)} · ${entry.summary.totalJourneys} journeys</span>
@@ -174,17 +197,41 @@ function renderDashboard(data, activePath) {
   `;
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+
 function renderError(message) {
   document.body.classList.remove("has-insights");
+  resetHero();
   dashboard.classList.remove("is-hidden");
   dashboard.classList.remove("loading");
-  dashboard.innerHTML = `<section class="error-panel">${message}</section>`;
+  dashboard.removeAttribute("aria-busy");
+  dropZone.removeAttribute("aria-disabled");
+  dashboard.innerHTML = `
+    <section class="error-panel" role="alert">
+      <h2 class="section-title">We couldn't read that statement</h2>
+      <p class="section-subtitle">${escapeHtml(message)}</p>
+      <button type="button" data-action="upload-new">Try another file</button>
+    </section>
+  `;
 }
 
 async function uploadStatementFile(file) {
   dashboard.classList.remove("is-hidden");
   dashboard.classList.add("loading");
-  dashboard.innerHTML = `<section class="loading-panel">Generating dashboard from ${file.name}...</section>`;
+  dashboard.setAttribute("aria-busy", "true");
+  dropZone.setAttribute("aria-disabled", "true");
+  dashboard.innerHTML = `
+    <section class="loading-panel">
+      <span class="spinner" aria-hidden="true"></span>
+      <div>
+        <p class="loading-title">Reading your statement…</p>
+        <p class="section-subtitle">${escapeHtml(file.name)}</p>
+      </div>
+    </section>
+  `;
+  dashboard.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const response = await fetch("/api/statement/upload", {
     method: "POST",
@@ -205,7 +252,13 @@ async function uploadStatementFile(file) {
 }
 
 async function handleSelectedFile(file) {
-  if (!file) {
+  if (!file || dropZone.getAttribute("aria-disabled") === "true") {
+    return;
+  }
+
+  const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  if (!ACCEPTED_EXTENSIONS.includes(extension)) {
+    renderError(`"${file.name}" isn't a PDF or TXT file. Download your SimplyGo statement as a PDF and try again.`);
     return;
   }
 
@@ -261,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-dashboard.addEventListener("click", (event) => {
+document.addEventListener("click", (event) => {
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
     return;
@@ -273,7 +326,11 @@ dashboard.addEventListener("click", (event) => {
   }
 
   if (actionTarget.dataset.action === "clear-data") {
+    if (!window.confirm("Clear all saved statements from this browser? This can't be undone.")) {
+      return;
+    }
     clearAllStoredData();
+    resetHero();
     dashboard.classList.add("is-hidden");
     dashboard.classList.remove("loading");
     dashboard.innerHTML = `
@@ -291,6 +348,7 @@ dashboard.addEventListener("click", (event) => {
     const loaded = loadStatementFromHistory(actionTarget.dataset.statementId);
     if (loaded) {
       renderDashboard(loaded, loaded.sourceLabel || "Saved statement");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 });

@@ -2421,3 +2421,516 @@ tbody tr:hover {
   background: linear-gradient(135deg, rgba(78, 127, 255, 0.28), rgba(255, 143, 112, 0.2));
   color: #f7f2ff;
 }
+
+/* ---------- UX refinements ---------- */
+
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-sky);
+  outline-offset: 3px;
+}
+
+.drop-zone:focus-visible {
+  outline: 3px solid var(--accent-sky);
+  outline-offset: 4px;
+}
+
+button:hover,
+.history-chip:hover {
+  transform: translateY(-1px);
+}
+
+button.menu-link:hover,
+.menu-link:hover {
+  transform: none;
+  background: var(--surface-mid);
+}
+
+button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+button:disabled,
+button:disabled:hover {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Desktop top bar: brand, always-visible page nav, menu for settings */
+.topbar {
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-brand,
+.topbar-nav {
+  display: none;
+}
+
+@media (min-width: 721px) {
+  .topbar {
+    position: sticky;
+    top: 12px;
+    z-index: 40;
+    justify-content: space-between;
+    padding: 8px 8px 8px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 252, 247, 0.78);
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    box-shadow: 0 12px 30px rgba(82, 47, 95, 0.1);
+  }
+
+  .topbar-brand {
+    display: inline-block;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .topbar-nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .topbar-link {
+    padding: 9px 16px;
+    border-radius: 999px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .topbar-link:hover {
+    color: var(--ink);
+    background: var(--surface-mid);
+  }
+
+  .topbar-link.is-active {
+    color: var(--ink);
+    background: linear-gradient(135deg, rgba(76, 181, 255, 0.18), rgba(255, 122, 89, 0.18));
+  }
+
+  .topbar-link.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .topbar-link.is-disabled:hover {
+    background: none;
+    color: var(--muted);
+  }
+
+  .menu-button {
+    min-width: 0;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--surface-strong);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+    font-weight: 700;
+  }
+
+  .menu-button:hover {
+    box-shadow: 0 8px 18px rgba(27, 37, 64, 0.1);
+  }
+
+  /* Page links already live in the top bar on desktop */
+  .menu-nav-group {
+    display: none;
+  }
+
+  .menu-utility-group {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  :root[data-theme="dark"] .topbar {
+    background: rgba(18, 25, 43, 0.78);
+    border-color: rgba(209, 220, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(3, 7, 18, 0.3);
+  }
+
+  :root[data-theme="dark"] .topbar-link.is-active {
+    background: linear-gradient(135deg, rgba(85, 183, 255, 0.24), rgba(255, 143, 112, 0.18));
+  }
+
+  :root[data-theme="dark"] .menu-button {
+    background: var(--surface-mid);
+    border-color: rgba(209, 220, 255, 0.1);
+    color: #f5f7ff;
+  }
+}
+
+/* Overview once a statement is loaded: compact header, no duplicate upload panels */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.hero-actions button {
+  padding: 11px 18px;
+}
+
+body.has-insights .hero {
+  grid-template-columns: 1fr;
+  margin-bottom: 20px;
+}
+
+body.has-insights .drop-panel,
+body.has-insights .how-to-panel {
+  display: none;
+}
+
+body.has-insights .hero h1 {
+  max-width: none;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  line-height: 1.05;
+}
+
+body.has-insights .hero-copy {
+  margin-top: 10px;
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  body.has-insights .hero h1 {
+    font-size: clamp(1.6rem, 7.4vw, 2.2rem);
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .hero-actions button {
+    width: 100%;
+    padding: 11px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Drop zone affordances */
+.drop-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  color: #1b6ba8;
+  background: rgba(76, 181, 255, 0.16);
+}
+
+.drop-browse {
+  color: #1b6ba8;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.drop-zone.is-dragging .drop-icon {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.drop-zone[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: progress;
+  pointer-events: none;
+}
+
+:root[data-theme="dark"] .drop-icon,
+:root[data-theme="dark"] .drop-browse {
+  color: #7ecbff;
+}
+
+:root[data-theme="dark"] .drop-zone {
+  border-color: rgba(126, 203, 255, 0.28);
+  background:
+    linear-gradient(135deg, rgba(85, 183, 255, 0.08), transparent 42%),
+    linear-gradient(315deg, rgba(255, 143, 112, 0.08), transparent 36%),
+    rgba(255, 255, 255, 0.03);
+}
+
+/* Loading, error, and empty states */
+.loading-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.loading-panel .section-subtitle {
+  margin-top: 4px;
+}
+
+.spinner {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-soft);
+  border-top-color: var(--accent);
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-panel {
+  border-color: rgba(161, 59, 85, 0.24);
+}
+
+.error-panel button,
+.empty-panel .primary-link {
+  margin-top: 16px;
+}
+
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent-deep), var(--accent));
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(219, 74, 143, 0.24);
+}
+
+/* Details results count */
+.results-count {
+  margin: 16px 0 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.results-count strong {
+  color: var(--ink);
+}
+
+.filter-toolbar {
+  align-items: end;
+}
+
+/* ---------- Button system ---------- */
+
+:root {
+  --btn-primary-bg: linear-gradient(135deg, #b8336f, #d9532f);
+  --btn-primary-shadow: 0 6px 16px rgba(184, 51, 111, 0.22);
+  --btn-primary-shadow-hover: 0 10px 22px rgba(184, 51, 111, 0.3);
+  --btn-danger: #a13b55;
+  --btn-danger-soft: rgba(161, 59, 85, 0.1);
+}
+
+:root[data-theme="dark"] {
+  --btn-primary-bg: linear-gradient(135deg, #c43d7c, #e0603c);
+  --btn-primary-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  --btn-primary-shadow-hover: 0 10px 22px rgba(0, 0, 0, 0.38);
+  --btn-danger: #ff8fa6;
+  --btn-danger-soft: rgba(255, 143, 166, 0.12);
+}
+
+button,
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+.primary-link,
+:root[data-theme="dark"] .primary-link {
+  background: var(--btn-primary-bg);
+  color: #fff;
+  box-shadow: var(--btn-primary-shadow);
+}
+
+button:hover,
+.primary-link:hover {
+  box-shadow: var(--btn-primary-shadow-hover);
+}
+
+.btn-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* Secondary: quiet surface button */
+.secondary-action,
+:root[data-theme="dark"] .secondary-action {
+  background: var(--surface-strong);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .secondary-action {
+  background: var(--surface-mid);
+}
+
+.secondary-action:hover,
+:root[data-theme="dark"] .secondary-action:hover {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  box-shadow: 0 6px 14px rgba(27, 37, 64, 0.1);
+}
+
+/* Danger: outlined, tinted on hover so it never reads as the main action */
+.secondary-action-danger,
+:root[data-theme="dark"] .secondary-action-danger {
+  background: transparent;
+  color: var(--btn-danger);
+  border: 1px solid color-mix(in srgb, var(--btn-danger) 35%, transparent);
+}
+
+.secondary-action-danger:hover,
+:root[data-theme="dark"] .secondary-action-danger:hover {
+  background: var(--btn-danger-soft);
+  border-color: var(--btn-danger);
+  box-shadow: none;
+}
+
+/* Menu toggle is navigation, not a call to action */
+.menu-button,
+:root[data-theme="dark"] .menu-button {
+  min-width: 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 16px rgba(27, 37, 64, 0.08);
+}
+
+:root[data-theme="dark"] .menu-button {
+  background: var(--surface-mid);
+  border-color: rgba(209, 220, 255, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.menu-button::before {
+  content: "";
+  width: 16px;
+  height: 12px;
+  background:
+    linear-gradient(currentColor 0 0) top / 100% 2px no-repeat,
+    linear-gradient(currentColor 0 0) center / 100% 2px no-repeat,
+    linear-gradient(currentColor 0 0) bottom / 100% 2px no-repeat;
+  transition: transform 180ms ease;
+}
+
+.menu-button[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+
+/* Items inside the menu panel stay list rows */
+button.menu-link {
+  display: block;
+  min-height: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+button.menu-link,
+:root[data-theme="dark"] button.menu-link {
+  box-shadow: none;
+}
+
+.menu-link.theme-toggle-button {
+  display: inline-flex;
+  border-radius: 999px;
+}
+
+.clear-data-button,
+:root[data-theme="dark"] .clear-data-button {
+  color: var(--btn-danger);
+}
+
+/* History chips are list items, not buttons visually */
+.history-chip {
+  display: grid;
+  justify-content: stretch;
+  min-height: 0;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+.history-chip.is-active .history-chip-title::after {
+  content: "Viewing";
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+@media (max-width: 480px) {
+  .topbar .menu-button {
+    width: auto;
+  }
+
+  .label-long {
+    display: none;
+  }
+
+  .hero-actions button {
+    gap: 6px;
+    white-space: nowrap;
+  }
+}

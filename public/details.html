@@ -7,7 +7,8 @@
     <title>Journey Details</title>
     <script>
       (function () {
-        var theme = localStorage.getItem("travel-dashboard-theme") || "light";
+        var theme = localStorage.getItem("travel-dashboard-theme") ||
+          (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         document.documentElement.setAttribute("data-theme", theme);
         var themeColor = theme === "dark" ? "#131a2d" : "#fff0d6";
         var themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -67,11 +68,12 @@
           <p class="section-subtitle">
             Upload a statement on the main page first, then return here for the detailed journey view.
           </p>
+          <a class="primary-link" href="/">Upload a statement</a>
         </section>
       </main>
     </div>
 
-    <nav class="mobile-tabbar" aria-label="Mobile page navigation">
+    <nav class="mobile-tabbar" aria-label="Page navigation">
       <a class="mobile-tab" data-tab="overview" href="/">
         <span class="mobile-tab-label">Overview</span>
       </a>

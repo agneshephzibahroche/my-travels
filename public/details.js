@@ -82,11 +82,11 @@ function renderMobileCards(journeys) {
     .join("");
 }
 
-function renderDetails(data, filters = {}) {
+function filterJourneys(journeys, filters) {
   const search = (filters.search || "").trim().toLowerCase();
   const mode = filters.mode || "all";
   const dayType = filters.dayType || "all";
-  const filteredJourneys = (data.journeys || []).filter((journey) => {
+  return journeys.filter((journey) => {
     const routeText = `${journey.route} ${journey.legs
       .map((leg) => `${leg.modeLabel} ${leg.route} ${leg.time}`)
       .join(" ")}`.toLowerCase();
@@ -96,7 +96,27 @@ function renderDetails(data, filters = {}) {
     const dayTypeMatch = dayType === "all" || getDayType(journey.weekday) === dayType;
     return searchMatch && modeMatch && dayTypeMatch;
   });
+}
 
+function hasActiveFilters(filters) {
+  return Boolean((filters.search || "").trim()) || filters.mode !== "all" || filters.dayType !== "all";
+}
+
+// Only the results are re-rendered on filter changes so the search box keeps focus while typing.
+function renderResults(data, filters) {
+  const allJourneys = data.journeys || [];
+  const filteredJourneys = filterJourneys(allJourneys, filters);
+
+  detailsView.querySelector("[data-role='showing-count']").textContent =
+    `${filteredJourneys.length} of ${allJourneys.length} journeys`;
+  detailsView.querySelector(".journey-cards").innerHTML = renderMobileCards(filteredJourneys);
+  detailsView.querySelector("tbody").innerHTML = renderTableRows(filteredJourneys);
+  detailsView.querySelector(".table-wrapper").hidden = !filteredJourneys.length;
+  detailsView.querySelector("[data-role='no-results']").hidden = Boolean(filteredJourneys.length);
+  detailsView.querySelector("[data-action='clear-detail-filters']").disabled = !hasActiveFilters(filters);
+}
+
+function renderDetails(data, filters) {
   detailsView.innerHTML = `
     <section class="panel details-summary-panel">
       <div class="details-summary-grid">
@@ -118,36 +138,32 @@ function renderDetails(data, filters = {}) {
       <p class="section-subtitle">
         Search and filter the full journey rows from the uploaded statement.
       </p>
-      <div class="metadata">
-        <span><strong>Statement period:</strong> ${data.metadata.period || "N/A"}</span>
-        <span><strong>Total:</strong> ${formatCurrency(data.metadata.totalCharged || 0)}</span>
-        <span><strong>Showing:</strong> ${filteredJourneys.length} of ${(data.journeys || []).length} journeys</span>
-      </div>
-      <div class="filter-toolbar">
+      <div class="filter-toolbar" role="search">
         <label class="filter-field">
           <span class="filter-label">Search</span>
-          <input id="details-search" type="search" value="${filters.search || ""}" placeholder="Route, stop, service" />
+          <input id="details-search" type="search" autocomplete="off" placeholder="Route, stop, service" />
         </label>
         <label class="filter-field">
           <span class="filter-label">Mode</span>
           <select id="details-mode">
-            <option value="all" ${mode === "all" ? "selected" : ""}>All</option>
-            <option value="train" ${mode === "train" ? "selected" : ""}>Train</option>
-            <option value="bus" ${mode === "bus" ? "selected" : ""}>Bus</option>
-            <option value="mixed" ${mode === "mixed" ? "selected" : ""}>Mixed</option>
+            <option value="all">All</option>
+            <option value="train">Train</option>
+            <option value="bus">Bus</option>
+            <option value="mixed">Mixed</option>
           </select>
         </label>
         <label class="filter-field">
           <span class="filter-label">Day type</span>
           <select id="details-day-type">
-            <option value="all" ${dayType === "all" ? "selected" : ""}>All days</option>
-            <option value="weekday" ${dayType === "weekday" ? "selected" : ""}>Weekdays</option>
-            <option value="weekend" ${dayType === "weekend" ? "selected" : ""}>Weekends</option>
+            <option value="all">All days</option>
+            <option value="weekday">Weekdays</option>
+            <option value="weekend">Weekends</option>
           </select>
         </label>
         <button class="secondary-action" type="button" data-action="clear-detail-filters">Clear filters</button>
       </div>
-      <div class="journey-cards">${renderMobileCards(data.journeys || [])}</div>
+      <p class="results-count" aria-live="polite">Showing <strong data-role="showing-count"></strong></p>
+      <div class="journey-cards"></div>
       <div class="table-wrapper">
         <table>
           <thead>
@@ -158,17 +174,14 @@ function renderDetails(data, filters = {}) {
               <th>Fare</th>
             </tr>
           </thead>
-          <tbody>${renderTableRows(filteredJourneys)}</tbody>
+          <tbody></tbody>
         </table>
       </div>
-      ${filteredJourneys.length ? "" : `<p class="empty-state">No journeys matched those filters.</p>`}
+      <p class="empty-state" data-role="no-results" hidden>No journeys matched those filters.</p>
     </section>
   `;
 
-  const cardsContainer = detailsView.querySelector(".journey-cards");
-  if (cardsContainer) {
-    cardsContainer.innerHTML = renderMobileCards(filteredJourneys);
-  }
+  renderResults(data, filters);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -179,8 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   try {
     const filters = { search: "", mode: "all", dayType: "all" };
-    const rerender = () => renderDetails(data, filters);
-    rerender();
+    const rerender = () => renderResults(data, filters);
+    renderDetails(data, filters);
 
     detailsView.addEventListener("input", (event) => {
       if (event.target.id === "details-search") {
@@ -210,7 +223,11 @@ document.addEventListener("DOMContentLoaded", () => {
       filters.search = "";
       filters.mode = "all";
       filters.dayType = "all";
+      document.getElementById("details-search").value = "";
+      document.getElementById("details-mode").value = "all";
+      document.getElementById("details-day-type").value = "all";
       rerender();
+      document.getElementById("details-search").focus();
     });
   } catch (error) {
     detailsView.innerHTML = `

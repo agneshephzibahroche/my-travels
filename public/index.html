@@ -7,7 +7,8 @@
     <title>Travel Statement Dashboard</title>
     <script>
       (function () {
-        var theme = localStorage.getItem("travel-dashboard-theme") || "light";
+        var theme = localStorage.getItem("travel-dashboard-theme") ||
+          (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         document.documentElement.setAttribute("data-theme", theme);
         var themeColor = theme === "dark" ? "#131a2d" : "#fff0d6";
         var themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -55,20 +56,30 @@
 
       <header class="hero">
         <div>
-          <p class="eyebrow">SimplyGo Route Story</p>
-          <h1>Turn your transit statement into an easy travel dashboard</h1>
-          <p class="hero-copy">
+          <p id="hero-eyebrow" class="eyebrow">SimplyGo Route Story</p>
+          <h1 id="hero-title">Turn your transit statement into an easy travel dashboard</h1>
+          <p id="hero-copy" class="hero-copy">
             Upload your SimplyGo statement and this page will turn it into a
             friendlier summary of routes, fares, patterns, and monthly travel habits.
           </p>
+          <div id="hero-actions" class="hero-actions" hidden>
+            <button type="button" data-action="upload-new">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg>
+              Upload <span class="label-long">another</span> statement
+            </button>
+            <button class="secondary-action secondary-action-danger" type="button" data-action="clear-data">Clear saved rides</button>
+          </div>
         </div>
 
         <section class="path-form drop-panel">
           <label for="statement-file">Board your statement here</label>
           <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload statement">
             <input id="statement-file" name="statementFile" type="file" accept=".pdf,.txt" hidden />
+            <span class="drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg>
+            </span>
             <p class="drop-title">Drop your travel statement and map out where your fares went</p>
-            <p class="helper-text">You can also tap here to choose a `.pdf` or `.txt` statement file.</p>
+            <p class="helper-text">or <span class="drop-browse">browse files</span> &middot; PDF or TXT</p>
           </div>
         </section>
       </header>
@@ -102,7 +113,7 @@
       </main>
     </div>
 
-    <nav class="mobile-tabbar" aria-label="Mobile page navigation">
+    <nav class="mobile-tabbar" aria-label="Page navigation">
       <a class="mobile-tab" data-tab="overview" href="/">
         <span class="mobile-tab-label">Overview</span>
       </a>
